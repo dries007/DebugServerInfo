@@ -1,0 +1,20 @@
+[
+  {
+    "modid": "debugserverinfo",
+    "name": "DebugServerInfo",
+    "description": "Display some server info in the F3 debug info",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://mc.dries007.net/DebugServerInfo",
+    "updateUrl": "https://mc.dries007.net/DebugServerInfo/update.json",
+    "authorList": [
+      "Dries007"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": [
+      "forge"
+    ]
+  }
+]
