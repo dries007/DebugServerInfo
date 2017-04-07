@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/DebugServerInfo.iml" filepath="$PROJECT_DIR$/.idea/modules/DebugServerInfo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DebugServerInfo_api.iml" filepath="$PROJECT_DIR$/.idea/modules/DebugServerInfo_api.iml" group="DebugServerInfo" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/DebugServerInfo_main.iml" filepath="$PROJECT_DIR$/.idea/modules/DebugServerInfo_main.iml" group="DebugServerInfo" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DebugServerInfo_test.iml" filepath="$PROJECT_DIR$/.idea/modules/DebugServerInfo_test.iml" group="DebugServerInfo" />
     </modules>
   </component>
 </project>

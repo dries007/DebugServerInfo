@@ -40,6 +40,7 @@ sourceCompatibility = targetCompatibility = "1.7"
 version = modVersion
 group = modGroup
 archivesBaseName = modBaseName
+if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
 
 minecraft {
     version = project.forgeVersion
@@ -78,4 +79,8 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude "mcmod.info"
     }
+}
+
+tasks.withType(Jar) {
+    appendix = project.minecraft.version
 }
