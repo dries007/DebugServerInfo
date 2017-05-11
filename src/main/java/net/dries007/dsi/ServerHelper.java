@@ -33,6 +33,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import static net.dries007.dsi.DebugServerInfo.NBT_COUNTER;
+import static net.dries007.dsi.DebugServerInfo.getLogger;
 
 /**
  * @author Dries007
@@ -93,6 +94,16 @@ public class ServerHelper
         if (count <= 0) return;
         event.player.getEntityData().setInteger(NBT_COUNTER, count - 1);
         Data data = ServerHelper.getData();
-        if (data != null) DebugServerInfo.getSnw().sendTo(data, (EntityPlayerMP) event.player);
+        if (data != null)
+        {
+            try
+            {
+                DebugServerInfo.getSnw().sendTo(data, (EntityPlayerMP) event.player);
+            }
+            catch (Exception e)
+            {
+                getLogger().info("Caught error in sendTo. {} ({})", e.getMessage(), e.getClass().getName());
+            }
+        }
     }
 }
