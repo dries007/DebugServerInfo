@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
 @Mod(
         modid = DebugServerInfo.MOD_ID,
         name = DebugServerInfo.MOD_NAME,
-        version = DebugServerInfo.VERSION,
         acceptableRemoteVersions = "*",
         guiFactory = "net.dries007.dsi.client.ConfigGuiFactory"
 )
@@ -49,7 +48,6 @@ public class DebugServerInfo
 {
     public static final String MOD_ID = "debugserverinfo";
     public static final String MOD_NAME = "DebugServerInfo";
-    public static final String VERSION = "1.0.0";
     public static final String NBT_COUNTER = MOD_ID + "Count";
 
     @Mod.Instance

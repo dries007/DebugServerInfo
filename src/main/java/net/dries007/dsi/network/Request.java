@@ -60,14 +60,13 @@ public class Request implements IMessage
         buf.writeInt(time);
     }
 
-    public static class Handler implements IMessageHandler<Request, Data>
+    public static class Handler implements IMessageHandler<Request, IMessage>
     {
         @Override
         public Data onMessage(Request message, MessageContext ctx)
         {
-//            DebugServerInfo.getLogger().info("Request");
             ctx.getServerHandler().playerEntity.getEntityData().setInteger(NBT_COUNTER, message.time);
-            return ServerHelper.getData();
+            return null;
         }
     }
 }
