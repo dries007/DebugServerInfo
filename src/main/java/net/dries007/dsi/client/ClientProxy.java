@@ -26,6 +26,7 @@ import net.dries007.dsi.CommonProxy;
 import net.dries007.dsi.DebugServerInfo;
 import net.dries007.dsi.network.Request;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.world.WorldEvent;
@@ -35,7 +36,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.*;
+
+import static net.minecraftforge.common.config.Configuration.CATEGORY_CLIENT;
 
 /**
  * @author Dries007
@@ -50,10 +54,17 @@ public class ClientProxy extends CommonProxy
     private Minecraft mc;
 
     private boolean cfgLeft;
-    private boolean cfgAlways;
+    private int cfgMaxDims;
+    private boolean cfgClock24h;
+    private int cfgClockIRL;
+    private int cfgClockMC;
+    private int cfgClockMCDays;
+    private int cfgModeFPS;
+    private int cfgModeTPS;
+    private int cfgModeRAM_Client;
+    private int cfgModeRAM_Server;
 
     private int counter;
-    private int cfgMaxDims;
 
     private double meanTickTime;
     private Map<Integer, Double> dims;
@@ -74,9 +85,21 @@ public class ClientProxy extends CommonProxy
     {
         ClientProxy.config = config;
 
-        cfgLeft = config.getBoolean("left", Configuration.CATEGORY_CLIENT, false, "Display on the left instead the right");
-        cfgAlways = config.getBoolean("always", Configuration.CATEGORY_CLIENT, false, "Always display the tps & mem, even when not in F3");
-        cfgMaxDims = config.getInt("maxDims", Configuration.CATEGORY_CLIENT, 10, 0, Integer.MAX_VALUE, "The max amount of dims to display. If 0, only total is shown.");
+        config.setCategoryComment(CATEGORY_CLIENT, "For the mode config options this applies:\n0 = Never, 1 = Always, 2 = Only when not in F3");
+
+        cfgLeft = config.getBoolean("left", CATEGORY_CLIENT, false, "Display on the left instead the right");
+        cfgClock24h = config.getBoolean("clock24h", CATEGORY_CLIENT, true, "Make clocks 24h");
+        cfgMaxDims = config.getInt("maxDims", CATEGORY_CLIENT, 5, 0, Integer.MAX_VALUE, "The max amount of dims to display. If 0, only total is shown.");
+
+        cfgClockIRL = config.getInt("ClockIRL", CATEGORY_CLIENT, 1, 0, 3, "Clock, IRL time 0 = Never, 1 = Always, 2 = In F3, 3 = NOT in F3");
+        cfgClockMC = config.getInt("ClockMC", CATEGORY_CLIENT, 1, 0, 3, "Clock, Minecraft time 0 = Never, 1 = Always, 2 = In F3, 3 = NOT in F3");
+        cfgClockMCDays = config.getInt("ClockMCDays", CATEGORY_CLIENT, 1, 0, 3, "Minecraft days counter 0 = Never, 1 = Always, 2 = In F3, 3 = NOT in F3");
+
+        cfgModeFPS = config.getInt("ModeFPS", CATEGORY_CLIENT, 1, 0, 3, "FPS mode (Frames per second, Client side) 0 = Never, 1 = Always, 2 = In F3, 3 = NOT in F3");
+        cfgModeRAM_Client = config.getInt("ModeRAM_Client", CATEGORY_CLIENT, 1, 0, 3, "RAM usage mode, Client side 0 = Never, 1 = Always, 2 = In F3, 3 = NOT in F3");
+
+        cfgModeTPS = config.getInt("ModeTPS", CATEGORY_CLIENT, 1, 0, 3, "TPS mode (Tick per second, Server Side) 0 = Never, 1 = Always, 2 = In F3, 3 = NOT in F3");
+        cfgModeRAM_Server = config.getInt("ModeRAM_Server", CATEGORY_CLIENT, 1, 0, 3, "RAM usage mode, Server side 0 = Never, 1 = Always, 2 = In F3, 3 = NOT in F3");
 
         super.config(config);
     }
@@ -119,12 +142,27 @@ public class ClientProxy extends CommonProxy
         dims = null;
     }
 
+    private boolean show(int mode)
+    {
+        switch (mode)
+        {
+            case 1:
+                return true;
+            case 2:
+                return mc.gameSettings.showDebugInfo;
+            case 3:
+                return !mc.gameSettings.showDebugInfo;
+            default:
+                return false;
+        }
+    }
+
     @SubscribeEvent
     public void clientTick(TickEvent.ClientTickEvent event)
     {
         if (event.phase != TickEvent.Phase.END) return;
         if (mc.world == null) return;
-        if ((cfgAlways || mc.gameSettings.showDebugInfo) && --counter < 0)
+        if ((show(cfgModeTPS) || show(cfgModeRAM_Server)) && --counter < 0)
         {
             counter = 20;
             DebugServerInfo.getSnw().sendToServer(new Request(counter));
@@ -134,43 +172,125 @@ public class ClientProxy extends CommonProxy
     @SubscribeEvent
     public void drawTextEvent(RenderGameOverlayEvent.Text event)
     {
-        if (cfgAlways && !mc.gameSettings.showDebugInfo)
-            draw(cfgLeft ? event.getLeft() : event.getRight(), Side.CLIENT);
-        if (cfgAlways || mc.gameSettings.showDebugInfo) draw(cfgLeft ? event.getLeft() : event.getRight(), Side.SERVER);
-    }
+        ArrayList<String> list = cfgLeft ? event.getLeft() : event.getRight();
 
-    private void draw(ArrayList<String> list, Side side)
-    {
-        int max = this.max;
-        int total = this.total;
-        int free = this.free;
-        if (side.isClient())
+        World world = Minecraft.getMinecraft().world;
+
+        if (world != null)
         {
-            if (list.isEmpty()) list.add("Client");
-            max = (int) (Runtime.getRuntime().maxMemory() / 1024 / 1024);
-            total = (int) (Runtime.getRuntime().totalMemory() / 1024 / 1024);
-            free = (int) (Runtime.getRuntime().freeMemory() / 1024 / 1024);
-            if (!mc.gameSettings.showDebugInfo) list.add(String.format("%d FPS", Minecraft.getDebugFPS()));
+            StringBuilder mc = new StringBuilder();
+
+            if (show(cfgClockMCDays))
+            {
+                mc.append("Day ").append(world.getTotalWorldTime() / 24000);
+            }
+
+            if (show(cfgClockMC))
+            {
+                if (mc.length() > 0) mc.append(' ');
+
+                // 0 -> 24000
+                int time = (int) world.getWorldTime();
+                // minutes = time % 1000
+                // hours = (6 + time / 1000) % 24, cause 0 = 6h, max = 24h
+                mc.append(doTime((6 + (time / 1000)) % 24, (int) ((time % 1000)*0.06), "MC"));
+            }
+
+            if (mc.length() > 0)
+            {
+                list.add(mc.toString());
+            }
+
+            if (show(cfgClockIRL))
+            {
+                Calendar cal = world.getCurrentDate();
+                list.add(doTime(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), "IRL"));
+            }
         }
-        else
+
+        if (show(cfgModeFPS))
+        {
+            list.add(String.format("%d FPS", Minecraft.getDebugFPS()));
+        }
+
+        if (show(cfgModeRAM_Client))
+        {
+            drawRAM(list, Side.CLIENT);
+        }
+
+        if (show(cfgModeRAM_Server))
+        {
+            drawRAM(list, Side.SERVER);
+        }
+
+        if (show(cfgModeTPS))
         {
             if (dims == null)
             {
-                list.add("No server data :(");
+                list.add("No server TPS data :(");
+            }
+            else
+            {
+                list.add(String.format("Ticktime Overall: %sms (%d TPS)", DECIMAL_FORMAT.format(meanTickTime), (int) Math.min(1000.0 / meanTickTime, 20)));
+                for (Map.Entry<Integer, Double> entry : dims.entrySet())
+                {
+                    list.add(String.format("Dim %d: %sms (%d TPS)", entry.getKey(), DECIMAL_FORMAT.format(entry.getValue()), (int) Math.min(1000.0 / entry.getValue(), 20)));
+                }
+            }
+        }
+    }
+
+    private String doTime(int h, int m, String suffix)
+    {
+        if (cfgClock24h)
+        {
+            return String.format("%02d:%02d %s", h, m, suffix);
+        }
+        else
+        {
+            /*
+             * American time: complex mess ahead.
+             * am - pm goes:
+             * 11:59 AM
+             * 12:00 PM
+             * 12:01 PM
+             * 12:59 PM
+             *  1:00 PM
+             *  1:01 PM
+             */
+            int retardedH = h % 12;
+            if (retardedH == 0) retardedH = 12;
+            return String.format("%d:%02d %s %s", retardedH, m, h < 12 ? "AM" : "PM", suffix);
+        }
+    }
+
+    private void drawRAM(ArrayList<String> list, Side side)
+    {
+        int max;
+        int total;
+        int free;
+        if (side.isClient())
+        {
+            list.add("Client");
+            max = (int) (Runtime.getRuntime().maxMemory() / 1024 / 1024);
+            total = (int) (Runtime.getRuntime().totalMemory() / 1024 / 1024);
+            free = (int) (Runtime.getRuntime().freeMemory() / 1024 / 1024);
+        }
+        else
+        {
+            max = this.max;
+            total = this.total;
+            free = this.free;
+            if (dims == null)
+            {
+                list.add("No server RAM data :(");
                 return;
             }
-            if (!list.isEmpty()) list.add("Server");
+            list.add("Server");
         }
 
         int diff = total - free;
         list.add(String.format("Mem: % 2d%% %03d/%03dMB", diff * 100 / max, diff, max));
         list.add(String.format("Allocated: % 2d%% %03dMB", total * 100 / max, total));
-        if (side.isClient()) return;
-
-        list.add(String.format("Ticktime Overall: %sms (%d TPS)", DECIMAL_FORMAT.format(meanTickTime), (int) Math.min(1000.0 / meanTickTime, 20)));
-        for (Map.Entry<Integer, Double> entry : dims.entrySet())
-        {
-            list.add(String.format("Dim %d: %sms (%d TPS)", entry.getKey(), DECIMAL_FORMAT.format(entry.getValue()), (int) Math.min(1000.0 / entry.getValue(), 20)));
-        }
     }
 }
