@@ -82,6 +82,8 @@ public class DebugServerInfo
     {
         proxy.config(config);
 
+        ServerHelper.permissionLevelRequired = config.getInt("permissionLevelRequired", "server", -1, -1, Integer.MAX_VALUE, "The OP level required to get information from the server (RAM, TPS etc).\n-1 means all users, 0 to 4 By default OPs are 4, but you can manually change this in the ops.json file.\n(By use OP level 0, a user can't use any OP commands, but they will get server debug info.)\n");
+
         if (config.hasChanged()) config.save();
     }
 

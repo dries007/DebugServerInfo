@@ -25,8 +25,10 @@ package net.dries007.dsi;
 import gnu.trove.map.TIntDoubleMap;
 import gnu.trove.map.hash.TIntDoubleHashMap;
 import net.dries007.dsi.network.Data;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.UserListOpsEntry;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -43,6 +45,7 @@ public class ServerHelper
     public static final ServerHelper I = new ServerHelper();
 
     private static Data data;
+    public static int permissionLevelRequired;
 
     private ServerHelper()
     {
@@ -89,7 +92,7 @@ public class ServerHelper
     @SubscribeEvent
     public void onTickPlayerTick(TickEvent.PlayerTickEvent event)
     {
-        if (event.side.isClient() || event.phase != TickEvent.Phase.START) return;
+        if (event.side.isClient() || event.phase != TickEvent.Phase.START || !hasPermission(event.player)) return;
         int count = event.player.getEntityData().getInteger(NBT_COUNTER);
         if (count <= 0) return;
         event.player.getEntityData().setInteger(NBT_COUNTER, count - 1);
@@ -105,5 +108,15 @@ public class ServerHelper
                 getLogger().info("Caught error in sendTo. {} ({})", e.getMessage(), e.getClass().getName());
             }
         }
+    }
+
+    private boolean hasPermission(EntityPlayer player)
+    {
+        if (permissionLevelRequired == -1) return true;
+        MinecraftServer s = FMLCommonHandler.instance().getMinecraftServerInstance();
+        if (!s.isDedicatedServer() && s.getServerOwner().equals(player.getName())) return true;
+        UserListOpsEntry entry = s.getPlayerList().getOppedPlayers().getEntry(player.getGameProfile());
+        //noinspection ConstantConditions LIES! It can be null, when the player is not an OP
+        return entry != null && entry.getPermissionLevel() >= permissionLevelRequired;
     }
 }
