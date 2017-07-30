@@ -38,12 +38,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.Logger;
 
-@Mod(
-        modid = DebugServerInfo.MOD_ID,
-        name = DebugServerInfo.MOD_NAME,
-        acceptableRemoteVersions = "*",
-        guiFactory = "net.dries007.dsi.client.ConfigGuiFactory"
-)
+@Mod(modid = DebugServerInfo.MOD_ID, name = DebugServerInfo.MOD_NAME, acceptableRemoteVersions = "*", guiFactory = "net.dries007.dsi.client.ConfigGuiFactory")
 public class DebugServerInfo
 {
     public static final String MOD_ID = "debugserverinfo";

@@ -5,16 +5,13 @@
     "description": "Display some server info in the F3 debug info",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "https://mc.dries007.net/DebugServerInfo",
-    "updateUrl": "https://mc.dries007.net/DebugServerInfo/update.json",
+    "url": "https://github.com/dries007/DebugServerInfo",
+    "updateUrl": "https://mc.dries007.net/DebugServerInfo.json",
     "authorList": [
       "Dries007"
     ],
     "credits": "",
     "logoFile": "",
-    "screenshots": [],
-    "dependencies": [
-      "forge"
-    ]
+    "screenshots": []
   }
 ]

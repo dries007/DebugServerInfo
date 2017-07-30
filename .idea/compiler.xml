@@ -12,9 +12,9 @@
       <entry name="!?*.groovy" />
     </wildcardResourcePatterns>
     <bytecodeTargetLevel target="1.7">
-      <module name="DebugServerInfo_api" target="1.7" />
-      <module name="DebugServerInfo_main" target="1.7" />
-      <module name="DebugServerInfo_test" target="1.7" />
+      <module name="DebugServerInfo_api" target="1.8" />
+      <module name="DebugServerInfo_main" target="1.8" />
+      <module name="DebugServerInfo_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

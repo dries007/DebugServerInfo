@@ -2,6 +2,9 @@
 ### Minecraft template
 # Don't sync the run folder!
 /run/
+/classes/
+/*.json
+
 ### Java template
 # Compiled class file
 *.class

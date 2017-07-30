@@ -65,7 +65,7 @@ public class Request implements IMessage
         @Override
         public Data onMessage(Request message, MessageContext ctx)
         {
-            ctx.getServerHandler().playerEntity.getEntityData().setInteger(NBT_COUNTER, message.time);
+            ctx.getServerHandler().player.getEntityData().setInteger(NBT_COUNTER, message.time);
             return null;
         }
     }

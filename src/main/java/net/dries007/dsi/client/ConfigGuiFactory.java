@@ -40,6 +40,7 @@ import java.util.Set;
 /**
  * @author Dries007
  */
+@SuppressWarnings("unused")
 @SideOnly(Side.CLIENT)
 public class ConfigGuiFactory implements IModGuiFactory
 {
@@ -50,22 +51,21 @@ public class ConfigGuiFactory implements IModGuiFactory
     }
 
     @Override
-    public Class<? extends GuiScreen> mainConfigGuiClass()
-    {
-        return ConfigGuiScreen.class;
-    }
-
-    @Override
     public Set<RuntimeOptionCategoryElement> runtimeGuiCategories()
     {
         return null;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element)
+    public boolean hasConfigGui()
     {
-        return null;
+        return true;
+    }
+
+    @Override
+    public GuiScreen createConfigGui(GuiScreen parentScreen)
+    {
+        return new ConfigGuiScreen(parentScreen);
     }
 
     public static class ConfigGuiScreen extends GuiConfig
